@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
@@ -26,26 +27,29 @@ import '../models/post_model.dart';
 // }
 
 class PostProvider extends ChangeNotifier {
-  List<PostModel> postList = [];
+  final StreamController<List<PostModel>> _postStreamController = StreamController<List<PostModel>>();
 
-  Future<void> getData() async {
-    await _getPostData();
-  }
+  Stream<List<PostModel>> get postDataStream => _postStreamController.stream;
 
-  Future<List<PostModel>> _getPostData() async {
+  void fetchData() async {
     try {
       final response = await http.get(Uri.parse(Config.postUrl));
-      final json = jsonDecode(response.body.toString());
       if (response.statusCode == 200) {
-        for (Map i in json) {
-          postList.add(PostModel.fromJson(i));
-        }
-        return postList;
+        final List<PostModel> posts = (json.decode(response.body) as List)
+            .map((data) => PostModel.fromJson(data))
+            .toList();
+        _postStreamController.add(posts);
       } else {
         throw Exception('Failed to load post data');
       }
     } catch (error) {
       throw Exception('Failed to fetch post data: $error');
     }
+  }
+
+  @override
+  void dispose() {
+    _postStreamController.close();
+    super.dispose();
   }
 }

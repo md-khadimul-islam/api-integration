@@ -3,76 +3,80 @@ import 'package:full_api_integration/providers/post_provider.dart';
 import 'package:full_api_integration/utils/utils.dart';
 import 'package:provider/provider.dart';
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+import '../../models/post_model.dart';
 
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  @override
-  void didChangeDependencies() {
-    Provider.of<PostProvider>(context, listen: false).getData();
-    super.didChangeDependencies();
-  }
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Api Test')),
-      body: Consumer<PostProvider>(
-        builder: (context, post, child) {
-          return ListView.builder(
-            itemCount: post.postList.length,
-            itemBuilder: (context, index) {
-              final item = post.postList[index];
-              return Container(
-                padding: EdgeInsets.symmetric(
+      body: StreamBuilder<List<PostModel>>(
+        stream: Provider.of<PostProvider>(context).postDataStream,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          } else if (snapshot.hasError) {
+            return Center(
+              child: Text('Error: ${snapshot.error}'),
+            );
+          } else {
+            final postList = snapshot.data ?? [];
+            return ListView.builder(
+              itemCount: postList.length,
+              itemBuilder: (context, index) {
+                final item = postList[index];
+                return Container(
+                  padding: EdgeInsets.symmetric(
                     horizontal: Utils.screenHeight * 0.02,
-                    vertical: Utils.screenHeight * 0.01),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(item.id!.toString()),
-                    Text.rich(
-                      TextSpan(
-                        children: [
-                          const TextSpan(
-                            text: 'Title:\n',
-                            style: TextStyle(
-                              color: Colors.black, // Adjust color as needed
-                              fontWeight: FontWeight.bold,
+                    vertical: Utils.screenHeight * 0.01,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(item.id!.toString()),
+                      Text.rich(
+                        TextSpan(
+                          children: [
+                            const TextSpan(
+                              text: 'Title:\n',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                          ),
-                          TextSpan(
-                            text: item.title!.toString(),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: Utils.screenHeight * 0.02),
-                    Text.rich(
-                      TextSpan(
-                        children: [
-                          const TextSpan(
-                            text: 'Description:\n',
-                            style: TextStyle(
-                              color: Colors.black, // Adjust color as needed
-                              fontWeight: FontWeight.bold,
+                            TextSpan(
+                              text: item.title!.toString(),
                             ),
-                          ),
-                          TextSpan(
-                            text: item.body!.toString(),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          );
+                      SizedBox(height: Utils.screenHeight * 0.02),
+                      Text.rich(
+                        TextSpan(
+                          children: [
+                            const TextSpan(
+                              text: 'Description:\n',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            TextSpan(
+                              text: item.body!.toString(),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            );
+          }
         },
       ),
     );
