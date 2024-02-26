@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:full_api_integration/providers/post_provider.dart';
+import 'package:full_api_integration/providers/user_provider.dart';
 import 'package:full_api_integration/utils/utils.dart';
 import 'package:full_api_integration/view/home/home_screen.dart';
+import 'package:full_api_integration/view/user_information/user_information_screen.dart';
 import 'package:provider/provider.dart';
 
 void main() {
@@ -18,6 +20,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => PostProvider()),
+        ChangeNotifierProvider(create: (context) => UserProvider()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -27,7 +30,7 @@ class MyApp extends StatelessWidget {
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
           useMaterial3: true,
         ),
-        home: const HomeScreen(),
+        home: const UserInformationScreen(),
       ),
     );
   }
